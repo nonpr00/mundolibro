@@ -15,12 +15,12 @@ Sistema de biblioteca con múltiples librerías (tenants) que permite a los usua
 El sistema utiliza la API real del backend para las funciones de autenticación y compras:
 
 #### Autenticación
-- **Crear Usuario**: `POST ${VITE_API_USUARIOS}/crear`
-- **Login Usuario**: `POST ${VITE_API_USUARIOS}/login`
+- **Crear Usuario**: `POST ${libreria_seleccionada}/crear`
+- **Login Usuario**: `POST ${libreria_seleccionada}/login`
 
 #### Compras
-- **Registrar Compra**: `POST ${VITE_API_COMPRAS}/registrar`
-- **Listar Compras**: `POST ${VITE_API_COMPRAS}/listar`
+- **Registrar Compra**: `POST ${libreria_seleccionada}/registrar`
+- **Listar Compras**: `POST ${libreria_seleccionada}/listar`
 
 ### Campos de Login y Registro
 
@@ -28,8 +28,8 @@ El sistema utiliza solo estos campos para autenticación:
 
 ```json
 {
-  "username": "Parislht",
-  "password": "123",
+  "username": "Username_10",
+  "password": "123456",
   "tenant_id": "KidVerse"
 }
 ```
@@ -43,7 +43,7 @@ El sistema utiliza solo estos campos para autenticación:
   "body": {
     "message": "Usuario creado exitosamente",
     "tenant_id": "KidVerse",
-    "username": "Parislht"
+    "username": "Username_10"
   }
 }
 ```
@@ -57,7 +57,7 @@ El sistema utiliza solo estos campos para autenticación:
     "token": "99c03722-d6fe-4739-8648-78095a6b429f",
     "expires": "2025-07-11 04:05:31",
     "tenant_id": "KidVerse",
-    "username": "Parislht"
+    "username": "Username_10"
   }
 }
 ```
@@ -66,7 +66,7 @@ El sistema utiliza solo estos campos para autenticación:
 ```json
 {
   "tenant_id": "KidVerse",
-  "username": "Parislht",
+  "username": "Username_10",
   "items": [
     { "libro_id": "LIB001", "cantidad": 2 }
   ],
@@ -131,7 +131,7 @@ VITE_API_COMPRAS=https://sgk3dn8z73.execute-api.us-east-1.amazonaws.com/prod/com
 
 El sistema incluye usuarios de prueba predefinidos:
 
-1. **KidVerse**: `username: "Parislht", password: "123"`
+1. **KidVerse**: `username: "Username_10", password: "123"`
 2. **NovaBooks**: `username: "JaneSmith", password: "123"`
 
 ## Capturas de Pantalla
