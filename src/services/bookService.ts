@@ -1,160 +1,141 @@
-import type { Book } from "../types"
+import type { Book, UpdateBookData } from "../types"
+import { API_CONFIG } from "../config/api"
+import { getAuthToken } from "./userService"
 
-// Data ficticia (tenemos que hacer un Microservicio para los libros)
-const MOCK_BOOKS: Book[] = [
-  {
-    id_libro: 1,
-    titulo: "The Great Gatsby",
-    autor: "F. Scott Fitzgerald",
-    genero: "Classic",
-    estado: "disponible",
-    descripcion:
-      "Set in the Jazz Age on Long Island, the novel depicts narrator Nick Carraway's interactions with mysterious millionaire Jay Gatsby and Gatsby's obsession to reunite with his former lover, Daisy Buchanan.",
-  },
-  {
-    id_libro: 2,
-    titulo: "To Kill a Mockingbird",
-    autor: "Harper Lee",
-    genero: "Classic",
-    estado: "disponible",
-    descripcion:
-      "The story of young Scout Finch, her brother Jem, and their father Atticus, as they navigate issues of race and class in their small Southern town during the 1930s.",
-  },
-  {
-    id_libro: 3,
-    titulo: "The Hobbit",
-    autor: "J.R.R. Tolkien",
-    genero: "Fantasy",
-    estado: "disponible",
-    descripcion:
-      "Bilbo Baggins is a hobbit who enjoys a comfortable, unambitious life, rarely traveling any farther than his pantry or cellar. But his contentment is disturbed when the wizard Gandalf and a company of dwarves arrive on his doorstep.",
-  },
-  {
-    id_libro: 4,
-    titulo: "Harry Potter and the Sorcerer's Stone",
-    autor: "J.K. Rowling",
-    genero: "Fantasy",
-    estado: "prestado",
-    descripcion:
-      "Harry Potter has never even heard of Hogwarts when the letters start dropping on the doormat at number four, Privet Drive. Addressed in green ink on yellowish parchment with a purple seal, they are swiftly confiscated by his grisly aunt and uncle.",
-  },
-  {
-    id_libro: 5,
-    titulo: "Pride and Prejudice",
-    autor: "Jane Austen",
-    genero: "Romance",
-    estado: "disponible",
-    descripcion:
-      "The story follows the main character, Elizabeth Bennet, as she deals with issues of manners, upbringing, morality, education, and marriage in the society of the landed gentry of the British Regency.",
-  },
-  {
-    id_libro: 6,
-    titulo: "The Catcher in the Rye",
-    autor: "J.D. Salinger",
-    genero: "Classic",
-    estado: "disponible",
-    descripcion:
-      'The novel details two days in the life of 16-year-old Holden Caulfield after he has been expelled from prep school. Confused and disillusioned, Holden searches for truth and rails against the "phoniness" of the adult world.',
-  },
-  {
-    id_libro: 7,
-    titulo: "The Alchemist",
-    autor: "Paulo Coelho",
-    genero: "Fiction",
-    estado: "disponible",
-    descripcion:
-      "The Alchemist follows the journey of an Andalusian shepherd boy named Santiago. Believing a recurring dream to be prophetic, he asks a Gypsy fortune teller in the nearby town about its meaning.",
-  },
-  {
-    id_libro: 8,
-    titulo: "Brave New World",
-    autor: "Aldous Huxley",
-    genero: "Science Fiction",
-    estado: "prestado",
-    descripcion:
-      "Largely set in a futuristic World State, whose citizens are environmentally engineered into an intelligence-based social hierarchy, the novel anticipates huge scientific advancements in reproductive technology, sleep-learning, psychological manipulation and classical conditioning.",
-  },
-]
-
-// Simulate local storage for book data
-const books: Book[] = [...MOCK_BOOKS]
-
+// Get authorization token from localStorage
 export const bookService = {
-  // Get all books
-  getAllBooks: async (): Promise<Book[]> => {
-    // Simulate API call delay
-    //await new Promise((resolve) => setTimeout(resolve, 800))
-    return [...books]
-  },
+  // List books by tenant - REAL API
+  listBooksByTenant: async (tenant_id: string): Promise<Book[]> => {
+    try {
+      const token = getAuthToken()
+      const response = await fetch(`${API_CONFIG.PRODUCTOS_BASE_URL}${API_CONFIG.ENDPOINTS.LISTAR_PRODUCTOS}?tenant_id=${tenant_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      })
 
-  // Get book by ID
-  getBookById: async (bookId: string | number): Promise<Book> => {
-    // Simulate API call delay
-    //await new Promise((resolve) => setTimeout(resolve, 500))
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-    const book = books.find((b) => b.id_libro === Number.parseInt(bookId.toString()))
+      const data = await response.json()
+      console.log("API: List books response", data)
 
-    if (!book) {
-      throw new Error("Book not found")
+      // Parse the body string to get the actual data
+      const bodyData = JSON.parse(data.body)
+      return bodyData.productos || []
+    } catch (error) {
+      console.error("Error fetching books:", error)
+      throw error
     }
-
-    return book
   },
 
-  // Get recently added books (last 4)
-  getRecentBooks: async (): Promise<Book[]> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 600))
+  // Get book by ID and tenant - REAL API
+  getBookById: async (tenant_id: string, libro_id: string): Promise<Book> => {
+    try {
+      const token = getAuthToken()
+      
+      const response = await fetch(`${API_CONFIG.PRODUCTOS_BASE_URL}${API_CONFIG.ENDPOINTS.BUSCAR_PRODUCTO}?tenant_id=${tenant_id}&libro_id=${libro_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      })
 
-    // In a real app, this would sort by date added
-    // Here we'll just return the last 4 books
-    return books.slice(-4)
-  },
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-  // Get popular books (most borrowed)
-  getPopularBooks: async (): Promise<Book[]> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 600))
+      const data = await response.json()
+      console.log("API: Get book response", data)
 
-    // In a real app, this would sort by borrow count
-    // Here we'll just return a random selection of 4 books
-    return books.sort(() => 0.5 - Math.random()).slice(0, 4)
-  },
-
-  // Search books by title, author, or genre
-  searchBooks: async (searchTerm: string): Promise<Book[]> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 700))
-
-    if (!searchTerm) {
-      return books
+      // Parse the body string to get the actual data
+      const bodyData = JSON.parse(data.body)
+      return bodyData
+    } catch (error) {
+      console.error("Error fetching book:", error)
+      throw error
     }
-
-    const term = searchTerm.toLowerCase()
-    return books.filter(
-      (book) =>
-        book.titulo.toLowerCase().includes(term) ||
-        book.autor.toLowerCase().includes(term) ||
-        book.genero.toLowerCase().includes(term),
-    )
   },
 
-  // Update book status (available/borrowed)
-  updateBookStatus: async (bookId: string | number, status: "disponible" | "prestado"): Promise<Book> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+  // Update book - REAL API
+  updateBook: async (updateData: UpdateBookData): Promise<Book> => {
+    try {
+      const token = getAuthToken()
+      console.log("token upd", token)
+      
+      const response = await fetch(`${API_CONFIG.PRODUCTOS_BASE_URL}${API_CONFIG.ENDPOINTS.MODIFICAR_PRODUCTO}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          tenant_id: updateData.tenant_id,
+          libro_id: updateData.libro_id,
+          precio: updateData.precio,
+          stock: updateData.stock
+        })
+      })
+      console.log("API: Update book response", response)
 
-    const bookIndex = books.findIndex((b) => b.id_libro === Number.parseInt(bookId.toString()))
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-    if (bookIndex === -1) {
-      throw new Error("Book not found")
+      const data = await response.json()
+      console.log("API: Update book response", data)
+
+      // Parse the body string to get the actual data
+      const bodyData = JSON.parse(data.body)
+      return bodyData.producto
+    } catch (error) {
+      console.error("Error updating book:", error)
+      throw error
     }
-
-    books[bookIndex] = {
-      ...books[bookIndex],
-      estado: status,
-    }
-
-    return books[bookIndex]
   },
+
+  // Search books by title or author within tenant - REAL API
+  // Since the API doesn't have a search endpoint, we'll filter the list results
+  searchBooks: async (tenant_id: string, query: string): Promise<Book[]> => {
+    try {
+      // Get all books for the tenant
+      const allBooks = await bookService.listBooksByTenant(tenant_id)
+      
+      // Filter by query
+      const lowercaseQuery = query.toLowerCase()
+      const filteredBooks = allBooks.filter(
+        (book) =>
+          book.titulo.toLowerCase().includes(lowercaseQuery) ||
+          book.autor.toLowerCase().includes(lowercaseQuery) ||
+          book.descripcion.toLowerCase().includes(lowercaseQuery)
+      )
+
+      console.log("API: Found", filteredBooks.length, "books matching query")
+      return filteredBooks
+    } catch (error) {
+      console.error("Error searching books:", error)
+      throw error
+    }
+  },
+
+  // Get available books (stock > 0) - REAL API
+  getAvailableBooks: async (tenant_id: string): Promise<Book[]> => {
+    try {
+      // Get all books for the tenant
+      const allBooks = await bookService.listBooksByTenant(tenant_id)
+      
+      // Filter by available stock
+      const availableBooks = allBooks.filter(book => book.stock > 0)
+      
+      console.log("API: Found", availableBooks.length, "available books")
+      return availableBooks
+    } catch (error) {
+      console.error("Error fetching available books:", error)
+      throw error
+    }
+  }
 }

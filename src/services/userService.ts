@@ -1,108 +1,69 @@
-import type { User, UserWithPassword, RegisterUserData } from "../types"
-
-// Mock service for user-related operations
-// In a real application, this would make API calls to the User microservice
-
-const MOCK_USERS: UserWithPassword[] = [
-  {
-    id_usuario: 1,
-    nombre: "John Doe",
-    email: "john@example.com",
-    password: "password123",
-    fecha_registro: "2023-01-15T10:30:00Z",
-  },
-  {
-    id_usuario: 2,
-    nombre: "Jane Smith",
-    email: "jane@example.com",
-    password: "password123",
-    fecha_registro: "2023-02-20T14:45:00Z",
-  },
-]
-
-// Simulate local storage for user data
-const users: UserWithPassword[] = [...MOCK_USERS]
+import type { User, RegisterUserData, RegisterResponse, LoginResponse } from "../types"
+import { getApiUrl, API_CONFIG } from "../config/api"
 
 export const userService = {
-  // Login user
-  login: async (email: string, password: string): Promise<User> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 800))
+  // Login user - REAL API
+  login: async (username: string, password: string, tenant_id: string): Promise<LoginResponse> => {
+    try {
+      const response = await fetch(getApiUrl(API_CONFIG.USUARIOS_BASE_URL, API_CONFIG.ENDPOINTS.LOGIN_USUARIO), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          tenant_id,
+        } as User),
+      })
+      console.log("response login", response)
 
-    const user = users.find((u) => u.email === email && u.password === password)
-
-    if (!user) {
-      throw new Error("Invalid credentials")
+      const data: LoginResponse = await response.json()
+      if (!response.ok || data.statusCode === 403) {
+        throw new Error('Invalid credentials')
+      }
+      
+      console.log("data login", data)
+      return data
+    } catch (error) {
+      console.error('Login API error:', error)
+      throw new Error('Invalid credentials')
     }
-
-    // Don't return the password
-    const { password: _, ...userWithoutPassword } = user
-    return userWithoutPassword
   },
 
-  // Register new user
-  register: async (userData: RegisterUserData): Promise<User> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+  // Register new user - REAL API
+  register: async (userData: RegisterUserData): Promise<RegisterResponse> => {
+    try {
+      const response = await fetch(getApiUrl(API_CONFIG.USUARIOS_BASE_URL, API_CONFIG.ENDPOINTS.CREAR_USUARIO), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+      console.log("response register", response)
 
-    // Check if email already exists
-    if (users.some((u) => u.email === userData.email)) {
-      throw new Error("Email already in use")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to create user')
+      }
+
+      const data: RegisterResponse = await response.json()
+      console.log("data register", data)
+
+      return data
+    } catch (error) {
+      console.error('Register API error:', error)
+      throw error
     }
-
-    const newUser: UserWithPassword = {
-      id_usuario: users.length + 1,
-      nombre: userData.nombre,
-      email: userData.email,
-      password: userData.password,
-      fecha_registro: new Date().toISOString(),
-    }
-
-    users.push(newUser)
-
-    // Don't return the password
-    const { password: _, ...userWithoutPassword } = newUser
-    return userWithoutPassword
   },
 
-  // Get user by ID
-  getUserById: async (userId: number): Promise<User> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+}
 
-    const user = users.find((u) => u.id_usuario === userId)
-
-    if (!user) {
-      throw new Error("User not found")
-    }
-
-    // Don't return the password
-    const { password: _, ...userWithoutPassword } = user
-    return userWithoutPassword
-  },
-
-  // Update user profile
-  updateUser: async (userId: number, userData: Partial<User>): Promise<User> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    const userIndex = users.findIndex((u) => u.id_usuario === userId)
-
-    if (userIndex === -1) {
-      throw new Error("User not found")
-    }
-
-    // Update user data
-    users[userIndex] = {
-      ...users[userIndex],
-      ...userData,
-      // Don't allow updating ID or registration date
-      id_usuario: users[userIndex].id_usuario,
-      fecha_registro: users[userIndex].fecha_registro,
-    }
-
-    // Don't return the password
-    const { password: _, ...userWithoutPassword } = users[userIndex]
-    return userWithoutPassword
-  },
+export const getAuthToken = (): string => {
+  const token = localStorage.getItem("token")
+  if (!token) {
+    throw new Error("No authorization token found")
+  }
+  return token
 }

@@ -23,7 +23,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
-      <section className="text-center py-20 px-4">
+      <section className="text-center pt-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
             MundoLibro.com

@@ -1,7 +1,3 @@
-"use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext.tsx"
@@ -9,12 +5,13 @@ import type { RegisterUserData } from "../../types"
 
 const Register = () => {
   const [formData, setFormData] = useState<RegisterUserData & { confirmPassword: string }>({
-    nombre: "",
-    email: "",
+    username: "",
     password: "",
+    tenant_id: "NovaBooks",
     confirmPassword: "",
   })
   const [error, setError] = useState<string>("")
+  const [success, setSuccess] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(false)
 
   const { register } = useAuth()
@@ -32,7 +29,7 @@ const Register = () => {
     e.preventDefault()
 
     // Validation
-    if (!formData.nombre || !formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       setError("Please fill in all fields")
       return
     }
@@ -42,26 +39,33 @@ const Register = () => {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long")
+    if (formData.password.length < 3) {
+      setError("Password must be at least 3 characters long")
       return
     }
 
     try {
       setError("")
+      setSuccess("")
       setLoading(true)
 
       await register({
-        nombre: formData.nombre,
-        email: formData.email,
+        username: formData.username,
         password: formData.password,
+        tenant_id: formData.tenant_id,
       })
 
-      navigate("/novabooks/books")
+      setSuccess("¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.")
+      setLoading(false)
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        navigate("/novabooks/login")
+      }, 2000)
+
     } catch (error) {
       console.error("Registration error:", error)
       setError("Failed to create an account. Please try again.")
-    } finally {
       setLoading(false)
     }
   }
@@ -85,33 +89,24 @@ const Register = () => {
           </div>
         )}
 
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            {success}
+          </div>
+        )}
+
         <div className="rounded-2xl shadow-xl p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre Completo
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de Usuario
               </label>
               <input
                 type="text"
-                id="nombre"
-                name="nombre"
+                id="username"
+                name="username"
                 className="w-full px-4 py-3 rounded-lg border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-200 focus:outline-none focus:ring-2 transition-all"
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Correo Electrónico
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                className="w-full px-4 py-3 rounded-lg border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-200 focus:outline-none focus:ring-2 transition-all"
-                value={formData.email}
+                value={formData.username}
                 onChange={handleChange}
                 required
               />

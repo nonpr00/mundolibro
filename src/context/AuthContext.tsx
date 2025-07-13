@@ -1,19 +1,19 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { userService } from "../services/userService"
-import type { User, RegisterUserData, AuthContextType } from "../types"
+import type { User, RegisterUserData, AuthContextType, LoginResponse, RegisterResponse } from "../types"
 
-const AuthContext = createContext<AuthContextType | null>(null)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }
 
 interface AuthProviderProps {
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
@@ -29,31 +29,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(false)
   }, [])
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (username: string, password: string, tenant_id: string): Promise<User> => {
     try {
-      const userData = await userService.login(email, password)
-      setUser(userData)
-      localStorage.setItem("user", JSON.stringify(userData))
-      return userData
+      const response: LoginResponse = await userService.login(username, password, tenant_id);
+  
+      const userData: User = {
+        username: response.body.username,
+        tenant_id: response.body.tenant_id,
+      };
+  
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", response.body.token);
+  
+      return userData;
     } catch (error) {
-      throw error
+      console.error("Error during login:", error);
+      throw error; // o puedes lanzar un error personalizado si prefieres
     }
-  }
+  };
+  
 
-  const register = async (userData: RegisterUserData): Promise<User> => {
-    try {
-      const newUser = await userService.register(userData)
-      setUser(newUser)
-      localStorage.setItem("user", JSON.stringify(newUser))
-      return newUser
-    } catch (error) {
-      throw error
-    }
+  const register = async (userData: RegisterUserData): Promise<RegisterResponse> => {
+    const response: RegisterResponse = await userService.register(userData)
+    // Don't set user or token after register - user needs to login
+    return response
   }
 
   const logout = (): void => {
     setUser(null)
     localStorage.removeItem("user")
+    localStorage.removeItem("token")
   }
 
   const value: AuthContextType = {

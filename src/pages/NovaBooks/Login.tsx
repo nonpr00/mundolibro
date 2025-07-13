@@ -1,11 +1,9 @@
-import type React from "react"
-
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext.tsx"
 
 const Login = () => {
-  const [email, setEmail] = useState<string>("")
+  const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(false)
@@ -16,15 +14,15 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email || !password) {
-      setError("Please enter both email and password")
+    if (!username || !password) {
+      setError("Please enter both username and password")
       return
     }
 
     try {
       setError("")
       setLoading(true)
-      await login(email, password)
+      await login(username, password, "NovaBooks")
       navigate("/novabooks/books")
     } catch (error) {
       console.error("Login error:", error)
@@ -56,15 +54,15 @@ const Login = () => {
         <div className="rounded-2xl shadow-xl p-8 bg-gradient-to-br from-blue-50 to-indigo-50">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Correo Electrónico
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de Usuario
               </label>
               <input
-                type="email"
-                id="email"
+                type="text"
+                id="username"
                 className="w-full px-4 py-3 rounded-lg border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-200 focus:outline-none focus:ring-2 transition-all"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>

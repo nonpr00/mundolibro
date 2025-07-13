@@ -1,9 +1,7 @@
 // User types
 export interface User {
-  id_usuario: number
-  nombre: string
-  email: string
-  fecha_registro: string
+  username: string
+  tenant_id: string
 }
 
 export interface UserWithPassword extends User {
@@ -11,33 +9,174 @@ export interface UserWithPassword extends User {
 }
 
 export interface RegisterUserData {
-  nombre: string
-  email: string
+  username: string
   password: string
+  tenant_id: string
 }
 
-// Book types
+export interface LoginUserData {
+  username: string
+  password: string
+  tenant_id: string
+}
+
+// API Response types
+export interface RegisterResponse {
+  statusCode: number
+  body: {
+    message: string
+    tenant_id: string
+    username: string
+  }
+}
+
+export interface LoginResponse {
+  statusCode: number
+  body: {
+    message: string
+    token: string
+    expires: string
+    tenant_id: string
+    username: string
+  }
+}
+
+// Book types - Updated for Productos API structure
 export interface Book {
-  id_libro: number
+  tenant_id: string
+  libro_id: string
   titulo: string
   autor: string
-  genero: string
-  estado: "disponible" | "prestado"
-  descripcion?: string
-  cover?: string
+  precio: number
+  stock: number
+  descripcion: string
+  cover?: string // Optional field for UI
 }
 
-// Loan types
-export interface Loan {
-  id_prestamo: number
-  id_usuario: number
-  id_libro: number
-  titulo_libro: string
-  autor_libro: string
-  fecha_prestamo: string
-  fecha_vencimiento: string
-  fecha_devolucion: string | null
+// Book API Request types
+export interface CreateBookData {
+  tenant_id: string
+  libro_id: string
+  titulo: string
+  autor: string
+  precio: number
+  stock: number
+  descripcion: string
+}
+
+export interface UpdateBookData {
+  tenant_id: string
+  libro_id: string
+  precio?: number
+  stock?: number
+}
+
+export interface DeleteBookData {
+  tenant_id: string
+  libro_id: string
+}
+
+// Book API Response types
+export interface CreateBookResponse {
+  statusCode: number
+  body: {
+    message: string
+    producto: Book
+  }
+}
+
+export interface UpdateBookResponse {
+  statusCode: number
+  body: {
+    message: string
+    producto: Partial<Book>
+  }
+}
+
+export interface DeleteBookResponse {
+  statusCode: number
+  body: {
+    message: string
+    producto: {
+      tenant_id: string
+      libro_id: string
+    }
+  }
+}
+
+export interface ListBooksResponse {
+  statusCode: number
+  body: {
+    productos: Book[]
+    lastKey?: string // For pagination
+  }
+}
+
+export interface GetBookResponse {
+  statusCode: number
+  body: Book
+}
+
+// Cart types
+export interface CartItem {
+  libro_id: string
+  titulo: string
+  autor: string
+  precio: number
+  stock: number
   cover?: string
+  cantidad: number
+}
+
+export interface Cart {
+  items: CartItem[]
+  total: number
+  itemCount: number
+}
+
+// Purchase types
+export interface PurchaseItem {
+  libro_id: string
+  cantidad: number
+}
+
+export interface Purchase {
+  compra_id: string // Changed from number to string to match API
+  tenant_id: string
+  username: string
+  "username#compra_id": string
+  items: PurchaseItem[]
+  total: number
+  //fecha_compra: string
+  timestamp: string
+  //estado: "completada" | "pendiente" | "cancelada"
+}
+
+export interface RegisterPurchaseData {
+  tenant_id: string
+  username: string
+  items: PurchaseItem[]
+  total: number
+}
+
+export interface RegisterPurchaseResponse {
+  statusCode: number
+  body: {
+    message: string
+    compra_id: string // Changed from number to string
+  }
+}
+
+export interface ListPurchasesData {
+  tenant_id: string
+  username: string
+}
+
+export interface ListPurchasesResponse {
+  statusCode: number
+  body: {
+    compras: Purchase[]
+  }
 }
 
 // Review types
@@ -51,34 +190,11 @@ export interface Review {
   date: Date
 }
 
-/*
-export interface Review {
-  id: string
-  id_libro: number
-  id_usuario: number
-  nombre_usuario: string
-  texto: string
-  calificacion: number
-  fecha: string
-}
-*/
-
-/*
-export interface NewReviewData {
-  id_libro: number | string
-  id_usuario: number
-  nombre_usuario: string
-  texto: string
-  calificacion: number
-  fecha?: string
-}
-*/
-
 // Auth context types
 export interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<User>
-  register: (userData: RegisterUserData) => Promise<User>
+  login: (username: string, password: string, tenant_id: string) => Promise<User>
+  register: (userData: RegisterUserData) => Promise<RegisterResponse>
   logout: () => void
 }
