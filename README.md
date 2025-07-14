@@ -109,23 +109,12 @@ El sistema incluye un carrito de compras completo con las siguientes funcionalid
 5. **Comprar**: Ejecuta la compra que llama a la API real
 6. **Confirmación**: Recibe confirmación y se redirige al historial
 
-#### Componentes del Carrito
+#### Componentes
 - **CartContext**: Manejo de estado global del carrito
 - **Cart.tsx**: Vista principal del carrito con gestión de items
-- **Books.tsx**: Integración con botones "Agregar al Carrito"
-- **BookDetail.tsx**: Selector de cantidad antes de agregar
+- **Books.tsx**: Lista de libros con boton "Agregar al Carrito" en cada uno.
+- **BookDetail.tsx**: Componente para ver la información de un libro y tiene selector de cantidad antes de agregar
 - **Navbar**: Icono del carrito con contador de items
-
-### Configuración de API
-
-El proyecto utiliza variables de entorno para la configuración de las APIs:
-
-```env
-VITE_API_USUARIOS=https://sgk3dn8z73.execute-api.us-east-1.amazonaws.com/prod/usuarios
-VITE_API_COMPRAS=https://sgk3dn8z73.execute-api.us-east-1.amazonaws.com/prod/compras
-```
-
-**Importante**: Crea un archivo `.env` en la raíz del proyecto con las variables anteriores. Ver `ENV_SETUP.md` para más detalles.
 
 ### Usuarios de Prueba
 
@@ -136,13 +125,28 @@ El sistema incluye usuarios de prueba predefinidos:
 
 ## Capturas de Pantalla
 
-![](img_caps/kidverse.JPG)
+1. Landing Inicial
 
 ![](img_caps/landing.JPG)
 
-![](img_caps/nova_registro.JPG)
+![](img_caps/landing_librerias.JPG)
 
-![](img_caps/mi_perfil.JPG)
+2. Login
+
+![](img_caps/login.JPG)
+
+3. Catálogo de Libros
+
+![](img_caps/libros.JPG)
+
+![](img_caps/libro_detalle.JPG)
+
+4. Carrito de Compras y Finalización de la compra
+
+![](img_caps/carrito.JPG)
+
+![](img_caps/compras.JPG)
+
 
 ## Tecnologías Utilizadas
 
@@ -166,25 +170,13 @@ cd biblioteca-app
 npm install
 ```
 
-3. **Configurar variables de entorno**
-```bash
-# Crear archivo .env en la raíz del proyecto
-cp ENV_SETUP.md .env
-# Editar .env con las variables correctas
-```
-
-4. **Ejecutar el proyecto**
+3. **Ejecutar el proyecto**
 ```bash
 npm run dev
 ```
 
 El proyecto estará disponible en `http://localhost:5173`
 
-## Arquitectura
-
-- **API Real**: Autenticación (crear usuario, login) y Compras (registrar, listar)
-- **Mock Data**: Libros, reseñas, perfiles de usuario
-- **Frontend**: React + TypeScript con manejo de estado centralizado
 
 ## Estructura del Proyecto
 
